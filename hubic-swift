@@ -1,0 +1,160 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'mechanize'
+require 'logger'
+require 'json'
+require "base64"
+require 'highline/import'
+
+TOKEN_URL = "https://api.hubic.com/oauth/token/"
+AUTH_URL = "https://api.hubic.com/oauth/auth"
+REDIRECT_URI = "https://localhost.localdomain:4090/"
+CREDENTIALS_URL="https://api.hubic.com/1.0/account/credentials"
+
+def xdg_runtime  
+  @xdg_runtime ||= `xdg-user-dir RUNTIME`.chop
+end
+
+RUNTIME_TOKEN_FILE = File.absolute_path('hubic-swift', xdg_runtime)
+
+def xdg_config_dir
+  @xdg_config_dir ||= begin
+                        xdg_config = ENV['XDG_CONFIG_HOME'] || File.absolute_path('.config', Dir.home)
+                        dir=File.absolute_path('hubic-swift', xdg_config)
+                        Dir.mkdir(dir) unless Dir.exist?(dir)
+                        dir
+                      end
+end
+
+def ask_secret(prompt)
+  ask(prompt) { |q| q.echo = "*" }
+end
+
+def ask_id(prompt)
+  ask(prompt) { |q| q.echo = true }
+end
+
+def agent
+  @agent ||= Mechanize.new
+  @agent.log = Logger.new "mech.log"
+  return @agent
+end
+
+def ask_creds(askpass=true)
+  creds_file = File.absolute_path('creds', xdg_config_dir)
+  config = {}
+  if File.exist?(creds_file) then
+    File.open(creds_file) do |fd|
+      config=JSON.load(fd) || {}
+      @hubic_client_id=config['CLIENT_ID']
+      @hubic_client_secret = config['CLIENT_SECRET']
+      @hubic_username = config['USERNAME']
+      @hubic_pass = config['PASSWD']
+    end
+  end
+      
+  unless @hubic_client_id
+    @hubic_client_id = ask_id("What is your client id?")
+    config['CLIENT_ID'] = @hubic_client_id
+  end
+
+  @hubic_client_secret = config['CLIENT_SECRET']
+  unless @hubic_client_secret
+    @hubic_client_secret = ask_secret("What is your client secret?")
+    config['CLIENT_SECRET'] = @hubic_client_secret
+  end
+
+  unless @hubic_username
+    @hubic_username = ask_id("What is your hubic username?")
+    config['USERNAME'] = @hubic_username
+  end
+
+  unless @hubic_pass || not(askpass)
+    @hubic_pass = ask_secret("What is your hubic password?")
+    print("This password won't be saved, you have to manualy edit ", File.absolute_path('creds', xdg_config_dir),"\n")
+  end
+
+  File.open(creds_file,File::CREAT|File::TRUNC|File::RDWR, 0600) do |fd|
+    JSON.dump(config,fd)
+  end
+end
+
+def connect_to_hubic
+  agent.redirect_ok=false
+  login_url = "#{AUTH_URL}/?client_id=#{@hubic_client_id}" +
+    "&redirect_uri=https:%2F%2Flocalhost.localdomain:4090%2F" +
+    "&scope=usage.r,account.r,getAllLinks.r,credentials.r,links.drw" +
+    "&response_type=code" +
+    "&state=none"
+  page = agent.get(login_url)
+  form = page.forms.first
+  form['login']=@hubic_username
+  form['user_pwd']=@hubic_pass
+  agent.redirect_ok=false
+  page2=form.click_button
+  response_url=page2["location"]
+  @code = response_url.scan(/code=[^&]*/).first[5..-1]
+  
+  @base64cred = Base64.encode64("#{@hubic_client_id}:#{@hubic_client_secret}").gsub(/\n/, '')
+  response=agent.post(TOKEN_URL,{ "code"=>@code, "redirect_uri"=>REDIRECT_URI, "grant_type"=>"authorization_code"}, { "Authorization" => "Basic #{@base64cred}" })
+  @token = JSON.load(response.body)
+  @token['code']=@code
+  return @token
+end
+
+def refresh_hubic_token
+  response=agent.post(TOKEN_URL,{ "refresh_token" => @token['refresh_token'], "grant_type"=>"refresh_token", "client_id"=>@hubic_client_id, "client_secret" => @hubic_client_secret })
+  new_token = JSON.load(response.body)
+  @token.merge!(new_token)
+end  
+
+def save_hubic_token
+  File.open(RUNTIME_TOKEN_FILE,File::CREAT|File::TRUNC|File::RDWR, 0600) do |fd|
+    JSON.dump(@token,fd)
+  end
+end  
+
+def load_hubic_token
+  if File.exists?(RUNTIME_TOKEN_FILE) then
+    File.open(RUNTIME_TOKEN_FILE) do |fd|
+      @token=JSON.load(fd)
+    end
+  end
+end
+
+def openstack_token
+  response=agent.get(CREDENTIALS_URL,parameters={},referer=nil,header = { "Authorization" => "Bearer #{@token["access_token"]}" })
+  new_token = JSON.load(response.body)
+  new_token["expires"]=new_token["expires"].scan(/[0-9]+/).map { |s| s.to_i }
+  @token.merge!(new_token)
+end
+
+
+def main
+  argv = ARGV
+  if argv[0]=="--cleanup" then
+    File.delete(RUNTIME_TOKEN_FILE)
+    exit(0)
+  elsif argv[0]=="--reconnect" then
+    File.delete(RUNTIME_TOKEN_FILE)
+  end    
+  load_hubic_token
+  if @token then
+    if @token["expires"] and Time.now > Time.utc(@token["expires"][0],@token["expires"][1],@token["expires"][2],@token["expires"][3]) then
+      # The creds have expired, trying to renew
+      ask_creds(askpass=false)
+      refresh_hubic_token
+      openstack_token
+      save_hubic_token
+    end
+  else
+    ask_creds
+    connect_to_hubic
+    openstack_token
+    save_hubic_token
+  end
+  Process.wait(Process.spawn("swift", "--os-auth-token", @token["token"], \
+                             "--os-storage-url", @token["endpoint"], *ARGV))
+end
+
+main
