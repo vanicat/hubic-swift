@@ -10,7 +10,7 @@ Dependency
 You obviously need to have ruby to run this. I also use the mechanize,
 logger, and highline gems (json and base64 are part of ruby).
 
-This has only been tested on linux.
+This has only been tested on Debian.
 
 You also need a `client_id` and `client_secret`. To have them,
 register an application in your hubic
