@@ -36,7 +36,7 @@ end
 
 def agent
   @agent ||= Mechanize.new
-  @agent.log = Logger.new "mech.log"
+  # @agent.log = Logger.new "mech.log"
   return @agent
 end
 
