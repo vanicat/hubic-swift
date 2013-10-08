@@ -1,0 +1,137 @@
+#!/usr/bin/ruby
+require 'dbus'
+
+class SecretStore
+  def byte_arr_to_s(arr)
+    arr.inject("") do |sum,e| sum + e.chr end
+  end
+
+  def prompt (prompt,signal)
+    if prompt == "/" then
+      return
+    end
+
+    prompt_object = @dbus_service.object(prompt)
+    prompt_object.introspect
+    prompt_object.default_iface = "org.freedesktop.Secret.Prompt"
+    main = DBus::Main.new()
+    main << @bus
+    dismiss=true
+    prompt_object.on_signal(signal) do |u|
+      dismiss = u
+      main.quit()
+    end
+    prompt_object.Prompt("")
+    main.run
+    if dismiss
+      exit(-1)
+    end
+    returm dismiss
+  end
+
+  def initialize
+    @bus = DBus::SessionBus.instance
+    @dbus_service = @bus.service("org.freedesktop.secrets")
+    @main_object = @dbus_service.object("/org/freedesktop/secrets")
+    @main_object.introspect
+    @main_object.default_iface = "org.freedesktop.Secret.Service"
+    
+    @session = @main_object.OpenSession("plain","")[1]
+
+    default_collection_name = @main_object.ReadAlias("default").first
+    @default_collection = @dbus_service.object(default_collection_name)
+    @default_collection.introspect
+    @default_collection.default_iface = "org.freedesktop.Secret.Collection"
+    
+    prompt = @main_object.Unlock([default_collection_name])
+    unlocked = prompt.first.first
+    if unlocked.nil? 
+      prompt(prompt[1],"Completed")
+    end
+  end
+
+  def lookup_items(info)
+    name = @default_collection.SearchItems("Service" => "Hubic", "Info" => info).first
+    if name.first
+      item=@dbus_service.object(name.first)
+      item.introspect
+      item.default_iface = "org.freedesktop.Secret.Item"
+      return item
+    end
+  end
+
+  def lookup_secret(info)
+    item = lookup_items(info)
+
+    unless item                 # There is no item, create it
+      print 'What is your #{info}?\n'
+      # I failed to create it with dbus, so let cheat
+      `secret-tool store --label="Hubic #{info}" Service Hubic Info #{info}`
+      item = lookup_items(info)
+    end
+    
+    unless item                 # This is not working
+      exit(-1)                  # let die
+    end
+
+    byte_arr_to_s(item.GetSecret(@session).first[2])
+  end
+
+  def username
+    @username_secret ||= lookup_secret("username")
+  end
+
+  def userpass
+    @userpass_secret ||= lookup_secret("password")
+  end
+
+  def client_id
+    @client_id_secret ||= lookup_secret("client_id")
+  end
+
+  def client_secret
+    @client_secret_secret ||= lookup_secret("client_secret")
+  end
+end
+
+class GitAnnexHook
+  def initialize
+    @secret_store = SecretStore.new
+  end
+  
+  def init
+    @secret_store.username
+    @secret_store.userpass
+    @secret_store.client_id
+    @secret_store.client_secret
+  end
+end
+
+
+
+def main
+  hook = GitAnnexHook.new
+  if ARGV[1]="--init" then
+    hook.init
+    exit(0)
+  end
+  if ENV['ANNEX_ACTION'].nil? then
+    print 'I don\'t now what to do\n'
+    print 'Either run with --init to store credetianle in your gnome-keyring or kwallet\n'
+    print 'or run it as special remote hook\n'
+    print 'see http://git-annex.branchable.com/special_remotes/hook/\n'
+    exit(-1) #NOT IMPLEMENTED
+  end
+
+  if ENV['ANNEX_ACTION'] == "store" then
+    exit(-1) #NOT IMPLEMENTED: $ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" < "$ANNEX_FILE"
+  elsif ENV['ANNEX_ACTION'] == "retrieve" then
+    exit(-1) #NOT IMPLEMENTED demo-download "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" > "$ANNEX_FILE"
+  elsif  ENV['ANNEX_ACTION'] == "remove" then
+    exit(-1) #NOT IMPLEMENTED demo-nuke "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"
+  elsif ENV['ANNEX_ACTION'] == "checkpresent" then
+    exit(-1) #    if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
+             #       echo "$ANNEX_KEY"
+             #    fi
+  end
+end
