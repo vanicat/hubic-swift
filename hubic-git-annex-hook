@@ -199,8 +199,9 @@ class HubicInterface
 end  
 
 class GitAnnexHook
-  def initialize
-    @secret_store = SecretStore.new
+  def initialize(secret,hubic)
+    @secret_store = secret
+    @hubic = hubic
   end
   
   def init
@@ -214,7 +215,9 @@ end
 
 
 def main
-  hook = GitAnnexHook.new
+  secret_store=SecretStore.new
+  hubic=HubicInterface.new(secret_store)
+  hook = GitAnnexHook.new(secret_store,hubic)
   if ARGV[1]="--init" then
     hook.init
     exit(0)
