@@ -210,6 +210,20 @@ class GitAnnexHook
     @secret_store.client_id
     @secret_store.client_secret
   end
+
+  def dispatch
+    if ENV['ANNEX_ACTION'] == "store" then
+      hubic.store(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
+    elsif ENV['ANNEX_ACTION'] == "retrieve" then
+      exit(-1) #NOT IMPLEMENTED demo-download "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" > "$ANNEX_FILE"
+    elsif  ENV['ANNEX_ACTION'] == "remove" then
+      exit(-1) #NOT IMPLEMENTED demo-nuke "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"
+    elsif ENV['ANNEX_ACTION'] == "checkpresent" then
+      exit(-1) #    if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
+               #       echo "$ANNEX_KEY"
+               #    fi
+    end
+  end
 end
 
 def main
@@ -249,18 +263,9 @@ def main
   end
 
   hubic.connect!
-
-  if ENV['ANNEX_ACTION'] == "store" then
-    exit(-1) #NOT IMPLEMENTED: $ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" < "$ANNEX_FILE"
-  elsif ENV['ANNEX_ACTION'] == "retrieve" then
-    exit(-1) #NOT IMPLEMENTED demo-download "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" > "$ANNEX_FILE"
-  elsif  ENV['ANNEX_ACTION'] == "remove" then
-    exit(-1) #NOT IMPLEMENTED demo-nuke "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"
-  elsif ENV['ANNEX_ACTION'] == "checkpresent" then
-    exit(-1) #    if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
-             #       echo "$ANNEX_KEY"
-             #    fi
-  end
+  
+  hook.dispatch!
+  
 end
 
 main
