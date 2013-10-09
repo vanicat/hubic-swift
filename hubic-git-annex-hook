@@ -116,6 +116,10 @@ class SecretStore
   def client_secret
     @client_secret || get_client_info[1]
   end
+
+  def creds_available?
+    lookup_items("user") and lookup_items("client")
+  end
 end
 
 class GitAnnexHook
