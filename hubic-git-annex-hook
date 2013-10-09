@@ -204,6 +204,13 @@ class HubicInterface
   def os_token
     @os_token ||= @token['token']
   end
+
+  def container(container)
+    @container = container
+    response=agent.put("#{endpoint}/#{container}",'',"X-Auth-Token" => os_token)
+    exit (-1) unless response.code[0] == 2 # Let die if we don't have 2?? response
+    self
+  end
 end  
 
 class GitAnnexHook
