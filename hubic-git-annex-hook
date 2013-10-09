@@ -231,6 +231,11 @@ class HubicInterface
     exit (-1) unless response.code == "204" # Let die if we don't have the "200" response
   end
 
+  def head(path)
+    response=agent.head("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
+    reponse.code=="200"
+  rescue Mechanize::ResponseCodeError => e
+    false
   end
 end
 
@@ -239,7 +244,7 @@ class GitAnnexHook
     @secret_store = secret
     @hubic = hubic
   end
-  
+
   def init
     @secret_store.username
     @secret_store.userpass
@@ -259,6 +264,12 @@ class GitAnnexHook
     hubic.container(container).delete("#{hash1}/#{hash2}/#{key}")
   end
 
+  def checkpresent(container,hash1, hash2, key)
+    if hubic.container(container).head("#{hash1}/#{hash2}/#{key}") then
+      print(key)
+    end
+  end
+
   def dispatch(container)
     action = ENV['ANNEX_ACTION']
     if action == "store" then
@@ -267,10 +278,8 @@ class GitAnnexHook
       get(container,ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
     elsif  action == "remove" then
       remove(container,ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'])
-    elsif ENV['ANNEX_ACTION'] == "checkpresent" then
-      exit(-1) #    if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
-               #       echo "$ANNEX_KEY"
-               #    fi
+    elsif action == "checkpresent" then
+      checkpresent(container,ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'])
     end
   end
 end
@@ -312,9 +321,8 @@ def main
   end
 
   hubic.connect!
-  
+
   hook.dispatch!(ARGV.first)
-  
 end
 
 main
