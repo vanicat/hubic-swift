@@ -221,7 +221,7 @@ class HubicInterface
 
   def get(path,file)
     agent.pluggable_parser.default = Mechanize::Download
-    response=agent.get("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",file,"X-Auth-Token" => os_token)
+    response=agent.get("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",{},nil,"X-Auth-Token" => os_token)
     exit (-1) unless response.code == "200" # Let die if we don't have the "200" response
     response.save!(file)
   end
