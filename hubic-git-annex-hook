@@ -251,10 +251,10 @@ class GitAnnexHook
   def dispatch(container)
     action = ENV['ANNEX_ACTION']
     if action == "store" then
-      store(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
+      store(container,ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
     elsif action == "retrieve" then
-      get(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
-    elsif  ENV['ANNEX_ACTION'] == "remove" then
+      get(container,ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
+    elsif  action == "remove" then
       exit(-1) #NOT IMPLEMENTED demo-nuke "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"
     elsif ENV['ANNEX_ACTION'] == "checkpresent" then
       exit(-1) #    if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
