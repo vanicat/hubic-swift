@@ -81,6 +81,18 @@ class SecretStore
     [item["org.freedesktop.Secret.Item"]["Attributes"][public_info], byte_arr_to_s(item.GetSecret(@session).first[2])]
   end
 
+  def lookup_connection_token
+    item = lookup_items("tokens")
+    return nil unless item
+    JSON.load(byte_arr_to_s(item.GetSecret(@session).first[2]))
+  end
+
+  def store_connection_token(token)
+    IO.popen(["secret-tool", "store", "--label=Hubic tokens", "Service", "Hubic", "Info", "tokens"],"r+") do |fd|
+      fd.puts JSON.dump(token)
+    end
+  end
+
   def get_user_info 
     @username,@userpass = lookup_secret("user","username","password")
   end
