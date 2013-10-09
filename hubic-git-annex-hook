@@ -239,6 +239,8 @@ def main
     print "or run it as special remote hook\n"
     print "see http://git-annex.branchable.com/special_remotes/hook/\n"
     exit(-1)
+  elsif not(secret_store.creds_available?) then
+    exit(-1)
   end
 
   if ENV['ANNEX_ACTION'] == "store" then
