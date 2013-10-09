@@ -234,10 +234,10 @@ def main
   end
 
   if ENV['ANNEX_ACTION'].nil? then
-    print "I don\'t now what to do\n"
-    print "Either run with --init to store credetianle in your gnome-keyring or kwallet\n"
-    print "or run it as special remote hook\n"
-    print "see http://git-annex.branchable.com/special_remotes/hook/\n"
+    warn "I don\'t now what to do"
+    warn "Either run with --init to store credetianle in your gnome-keyring or kwallet"
+    warn "or run it as special remote hook"
+    warn "see http://git-annex.branchable.com/special_remotes/hook/"
     exit(-1)
   elsif not(secret_store.creds_available?) then
     exit(-1)
