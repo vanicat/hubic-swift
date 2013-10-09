@@ -211,6 +211,13 @@ class HubicInterface
     exit (-1) unless response.code[0] == 2 # Let die if we don't have 2?? response
     self
   end
+
+  def store(path,file)
+    file=File.open(file,'rb')
+    response=agent.put("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",file,"X-Auth-Token" => os_token)
+    exit (-1) unless response.code == "201" # Let die if we don't have "201 created" response
+    file.close
+  end
 end  
 
 class GitAnnexHook
