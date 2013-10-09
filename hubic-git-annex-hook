@@ -212,22 +212,33 @@ class GitAnnexHook
   end
 end
 
-
-
 def main
   secret_store=SecretStore.new
   hubic=HubicInterface.new(secret_store)
   hook = GitAnnexHook.new(secret_store,hubic)
-  if ARGV[1]="--init" then
+  if ARGV.first=="--init" then
     hook.init
     exit(0)
+  elsif ARGV.first=="--help" then
+    warn "This is a git annex remote hook, that should no be run directly,"
+    warn "but mainly as a specila remote hook, see git annex doc"
+    warn "you can still run it with the `--init` option to store your cred in your gnome-keyring or kwallet"
+    warn "or with --clean-connexion-token and --clean-creds to remove some information from them"
+    exit(0)
+  elsif ARGV.first == "--clean-connexion-token" then
+    secret_store.clean-connexion-token # TODO
+    exit(0)
+  elsif ARGV.first == "--clean-creds" then
+    secret_store.clean-creds    # TODO
+    exit(0)
   end
+
   if ENV['ANNEX_ACTION'].nil? then
-    print 'I don\'t now what to do\n'
-    print 'Either run with --init to store credetianle in your gnome-keyring or kwallet\n'
-    print 'or run it as special remote hook\n'
-    print 'see http://git-annex.branchable.com/special_remotes/hook/\n'
-    exit(-1) #NOT IMPLEMENTED
+    print "I don\'t now what to do\n"
+    print "Either run with --init to store credetianle in your gnome-keyring or kwallet\n"
+    print "or run it as special remote hook\n"
+    print "see http://git-annex.branchable.com/special_remotes/hook/\n"
+    exit(-1)
   end
 
   if ENV['ANNEX_ACTION'] == "store" then
