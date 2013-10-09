@@ -196,6 +196,14 @@ class HubicInterface
     new_token["expires"]=new_token["expires"].scan(/[0-9]+/).map { |s| s.to_i }
     @token.merge!(new_token)
   end
+
+  def endpoint
+    @endpoint ||= @token['endpoint']
+  end
+
+  def os_token
+    @os_token ||= @token['token']
+  end
 end  
 
 class GitAnnexHook
