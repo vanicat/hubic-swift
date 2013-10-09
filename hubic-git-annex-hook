@@ -239,6 +239,11 @@ def main
     warn "or run it as special remote hook"
     warn "see http://git-annex.branchable.com/special_remotes/hook/"
     exit(-1)
+  elsif ARGV.first.nil? then
+    warn "first argument of the hook should be the name of the container"
+    warn "bye default hubic have only one container named default"
+    warn "this hook will create the container if it do no exist"
+    exit(-1)
   elsif not(secret_store.creds_available?) then
     exit(-1)
   end
