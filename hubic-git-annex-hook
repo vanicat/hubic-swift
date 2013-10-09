@@ -228,6 +228,9 @@ class HubicInterface
 
   def delete(path)
     response=agent.delete("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
+    exit (-1) unless response.code == "204" # Let die if we don't have the "200" response
+  end
+
   end
 end
 
