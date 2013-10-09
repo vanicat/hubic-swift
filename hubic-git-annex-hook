@@ -63,13 +63,14 @@ class SecretStore
     end
   end
 
-  def lookup_secret(info)
+  def lookup_secret(info,public_info,private_info)
     item = lookup_items(info)
 
     unless item                 # There is no item, create it
-      print 'What is your #{info}?\n'
+      print "What is your #{public_info}: "
+      pi = STDIN.readline.chomp
       # I failed to create it with dbus, so let cheat
-      `secret-tool store --label="Hubic #{info}" Service Hubic Info #{info}`
+      Process.wait(Process.spawn("secret-tool", "store", "--label=Hubic #{info}", "Service", "Hubic", "Info", info, public_info, pi))
       item = lookup_items(info)
     end
     
@@ -77,23 +78,31 @@ class SecretStore
       exit(-1)                  # let die
     end
 
-    byte_arr_to_s(item.GetSecret(@session).first[2])
+    [item["org.freedesktop.Secret.Item"]["Attributes"][public_info], byte_arr_to_s(item.GetSecret(@session).first[2])]
+  end
+
+  def get_user_info 
+    @username,@userpass = lookup_secret("user","username","password")
   end
 
   def username
-    @username_secret ||= lookup_secret("username")
+    @username || get_user_info[0]
   end
 
   def userpass
-    @userpass_secret ||= lookup_secret("password")
+    @userpass || get_user_info[1]
+  end
+
+  def get_client_info
+    @client_id, @client_secret = lookup_secret("client","client_id","client_secret")
   end
 
   def client_id
-    @client_id_secret ||= lookup_secret("client_id")
+    @client_id || get_client_info[0]
   end
 
   def client_secret
-    @client_secret_secret ||= lookup_secret("client_secret")
+    @client_secret || get_client_info[1]
   end
 end
 
