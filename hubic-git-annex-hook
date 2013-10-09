@@ -233,10 +233,14 @@ class GitAnnexHook
     @secret_store.client_secret
   end
 
+  def store(container,hash1, hash2, key,file)
+    hubic.container(container).store("#{hash1}/#{hash2}/#{key}",file)
+  end
+
   def dispatch(container)
     action = ENV['ANNEX_ACTION']
-    if ENV['ANNEX_ACTION'] == "store" then
-      hubic.store(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
+    if action == "store" then
+      store(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
     elsif ENV['ANNEX_ACTION'] == "retrieve" then
       exit(-1) #NOT IMPLEMENTED demo-download "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" > "$ANNEX_FILE"
     elsif  ENV['ANNEX_ACTION'] == "remove" then
