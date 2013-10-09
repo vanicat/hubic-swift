@@ -211,7 +211,7 @@ class GitAnnexHook
     @secret_store.client_secret
   end
 
-  def dispatch
+  def dispatch(container)
     if ENV['ANNEX_ACTION'] == "store" then
       hubic.store(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
     elsif ENV['ANNEX_ACTION'] == "retrieve" then
