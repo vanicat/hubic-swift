@@ -218,6 +218,13 @@ class HubicInterface
     exit (-1) unless response.code == "201" # Let die if we don't have "201 created" response
     file.close
   end
+
+  def get(path,file)
+    agent.pluggable_parser.default = Mechanize::Download
+    response=agent.get("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",file,"X-Auth-Token" => os_token)
+    exit (-1) unless response.code == "200" # Let die if we don't have the "200" response
+    response.save!(file)
+  end
 end  
 
 class GitAnnexHook
@@ -237,12 +244,16 @@ class GitAnnexHook
     hubic.container(container).store("#{hash1}/#{hash2}/#{key}",file)
   end
 
+  def get(container,hash1, hash2, key,file)
+    hubic.container(container).get("#{hash1}/#{hash2}/#{key}",file)
+  end
+
   def dispatch(container)
     action = ENV['ANNEX_ACTION']
     if action == "store" then
       store(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
-    elsif ENV['ANNEX_ACTION'] == "retrieve" then
-      exit(-1) #NOT IMPLEMENTED demo-download "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" > "$ANNEX_FILE"
+    elsif action == "retrieve" then
+      get(ENV['ANNEX_HASH_1'],ENV['ANNEX_HASH_2'],ENV['ANNEX_KEY'],ENV['ANNEX_FILE'])
     elsif  ENV['ANNEX_ACTION'] == "remove" then
       exit(-1) #NOT IMPLEMENTED demo-nuke "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"
     elsif ENV['ANNEX_ACTION'] == "checkpresent" then
