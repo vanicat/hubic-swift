@@ -122,6 +122,82 @@ class SecretStore
   end
 end
 
+TOKEN_URL = "https://api.hubic.com/oauth/token/"
+AUTH_URL = "https://api.hubic.com/oauth/auth"
+REDIRECT_URI = "https://localhost.localdomain:4090/"
+CREDENTIALS_URL="https://api.hubic.com/1.0/account/credentials"
+
+class HubicInterface
+  def initialize(secret_store)
+    @secret_store=secret_store
+  end
+  
+  def agent 
+    unless @agent
+      @agent = Mechanize.new
+      @agent.redirect_ok=false
+    end
+    @agent
+  end
+
+  def connect!
+    @token = @secret_store.lookup_connection_token
+    connect_to_hubic unless @token # If no token, we must connect to hubic
+    if @token["expires"] then
+      if Time.now >  Time.utc(@token["expires"][0],@token["expires"][1],@token["expires"][2],@token["expires"][3]) then
+        refresh_hubic_token
+        connect_to_os
+        @secret_store.store_connection_token(@token)
+      end
+    else
+      connect_to_os
+      @secret_store.store_connection_token(@token)
+    end    
+  end
+
+  def connect_to_hubic
+    warn 'connect hubic'
+    page = agent.get(AUTH_URL,{ "client_id" => @secret_store.client_id,
+                       "redirect_uri" => REDIRECT_URI,
+                       "scope" => "usage.r,account.r,getAllLinks.r,credentials.r,links.drw",
+                       "response_type" => "code",
+                       "state" => "none"
+                     },nil,nil)
+    page=page.links.first.click
+    form = page.forms.first
+    form['login']=@secret_store.username
+    form['user_pwd']=@secret_store.userpass
+    page2=form.click_button
+    response_url=page2["location"]
+    exit(-1) unless response_url
+
+    @code = response_url.scan(/code=[^&]*/).first[5..-1]
+    exit(-1) unless @code
+    
+    @base64cred = Base64.encode64("#{@secret_store.client_id}:#{@secret_store.client_secret}").gsub(/\n/, '')
+    response=agent.post(TOKEN_URL,{ "code"=>@code, "redirect_uri"=>REDIRECT_URI, "grant_type"=>"authorization_code"}, 
+                        { "Authorization" => "Basic #{@base64cred}" })
+    @token = JSON.load(response.body)
+    @token['code']=@code
+    return @token
+  end
+
+  def refresh_hubic_token
+    warn 'refresh hubic'
+    response=agent.post(TOKEN_URL,{ "refresh_token" => @token['refresh_token'], "grant_type"=>"refresh_token", "client_id"=>@secret_store.client_id, "client_secret" => @secret_store.client_secret })
+    new_token = JSON.load(response.body)
+    @token.merge!(new_token)
+  end
+
+  def connect_to_os
+    warn 'connect_to_os'
+    response=agent.get(CREDENTIALS_URL,parameters={},referer=nil,header = { "Authorization" => "Bearer #{@token["access_token"]}" })
+    new_token = JSON.load(response.body)
+    new_token["expires"]=new_token["expires"].scan(/[0-9]+/).map { |s| s.to_i }
+    @token.merge!(new_token)
+  end
+end  
+
 class GitAnnexHook
   def initialize
     @secret_store = SecretStore.new
