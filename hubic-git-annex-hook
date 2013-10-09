@@ -243,6 +243,8 @@ def main
     exit(-1)
   end
 
+  hubic.connect!
+
   if ENV['ANNEX_ACTION'] == "store" then
     exit(-1) #NOT IMPLEMENTED: $ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" < "$ANNEX_FILE"
   elsif ENV['ANNEX_ACTION'] == "retrieve" then
