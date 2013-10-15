@@ -212,9 +212,17 @@ class HubicInterface
     self
   end
 
+  def set_body_stream file, agent, request
+    request.body_stream = file
+  end
+
   def store(path,file)
     file=File.open(file,'rb')
+    # Mechanize don't do file upload on streem
+    hook = lambda {|agent, request| set_body_stream file, agent, request }
+    @agent.pre_connect_hooks.push hook
     response=agent.put("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",file,"X-Auth-Token" => os_token)
+    @agent.pre_connect_hooks.pop
     exit (-1) unless response.code == "201" # Let die if we don't have "201 created" response
     file.close
   end
