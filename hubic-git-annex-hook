@@ -233,7 +233,7 @@ class HubicInterface
 
   def head(path)
     response=agent.head("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
-    reponse.code=="200"
+    response.code=="200"
   rescue Mechanize::ResponseCodeError => e
     false
   end
