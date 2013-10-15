@@ -27,9 +27,9 @@ class SecretStore
     prompt_object.Prompt("")
     main.run
     if dismiss
-      exit(-1)
+      exit(-5)
     end
-    returm dismiss
+    return dismiss
   end
 
   def initialize
@@ -75,7 +75,7 @@ class SecretStore
     end
     
     unless item                 # This is not working
-      exit(-1)                  # let die
+      exit(-6)                  # let die
     end
 
     [item["org.freedesktop.Secret.Item"]["Attributes"][public_info], byte_arr_to_s(item.GetSecret(@session).first[2])]
@@ -169,10 +169,13 @@ class HubicInterface
     form['user_pwd']=@secret_store.userpass
     page2=form.click_button
     response_url=page2["location"]
-    exit(-1) unless response_url
+    exit(-7) unless response_url
 
     @code = response_url.scan(/code=[^&]*/).first[5..-1]
-    exit(-1) unless @code
+    unless @code
+      warn response_url
+      exit(-8)
+    end
     
     @base64cred = Base64.encode64("#{@secret_store.client_id}:#{@secret_store.client_secret}").gsub(/\n/, '')
     response=agent.post(TOKEN_URL,{ "code"=>@code, "redirect_uri"=>REDIRECT_URI, "grant_type"=>"authorization_code"}, 
@@ -230,13 +233,13 @@ class HubicInterface
   def get(path,file)
     agent.pluggable_parser.default = Mechanize::Download
     response=agent.get("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",{},nil,"X-Auth-Token" => os_token)
-    exit (-1) unless response.code == "200" # Let die if we don't have the "200" response
+    exit (-11) unless response.code == "200" # Let die if we don't have the "200" response
     response.save!(file)
   end
 
   def delete(path)
     response=agent.delete("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
-    exit (-1) unless response.code == "204" # Let die if we don't have the "200" response
+    exit (-12) unless response.code == "204" # Let die if we don't have the "200" response
   end
 
   def head(path)
@@ -320,14 +323,14 @@ def main
     warn "Either run with --init to store credetianle in your gnome-keyring or kwallet"
     warn "or run it as special remote hook"
     warn "see http://git-annex.branchable.com/special_remotes/hook/"
-    exit(-1)
+    exit(-2)
   elsif ARGV.first.nil? then
     warn "first argument of the hook should be the name of the container"
     warn "bye default hubic have only one container named default"
     warn "this hook will create the container if it do no exist"
-    exit(-1)
+    exit(-3)
   elsif not(secret_store.creds_available?) then
-    exit(-1)
+    exit(-4)
   end
 
   hubic.connect!
