@@ -245,6 +245,8 @@ class GitAnnexHook
     @hubic = hubic
   end
 
+  attr_reader :hubic
+
   def init
     @secret_store.username
     @secret_store.userpass
