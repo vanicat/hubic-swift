@@ -322,7 +322,7 @@ def main
 
   hubic.connect!
 
-  hook.dispatch!(ARGV.first)
+  hook.dispatch(ARGV.first)
 end
 
 main
