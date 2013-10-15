@@ -207,32 +207,32 @@ class HubicInterface
 
   def container(container)
     @container = container
-    response=agent.put("#{endpoint}/#{container}",'',"X-Auth-Token" => os_token)
-    exit (-1) unless response.code[0] == 2 # Let die if we don't have 2?? response
+    response=agent.put("#{endpoint}/#{@container}",'',"X-Auth-Token" => os_token)
+    exit (-1) unless response.code[0] == '2' # Let die if we don't have 2?? response
     self
   end
 
   def store(path,file)
     file=File.open(file,'rb')
-    response=agent.put("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",file,"X-Auth-Token" => os_token)
+    response=agent.put("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",file,"X-Auth-Token" => os_token)
     exit (-1) unless response.code == "201" # Let die if we don't have "201 created" response
     file.close
   end
 
   def get(path,file)
     agent.pluggable_parser.default = Mechanize::Download
-    response=agent.get("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",{},nil,"X-Auth-Token" => os_token)
+    response=agent.get("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",{},nil,"X-Auth-Token" => os_token)
     exit (-1) unless response.code == "200" # Let die if we don't have the "200" response
     response.save!(file)
   end
 
   def delete(path)
-    response=agent.delete("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
+    response=agent.delete("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
     exit (-1) unless response.code == "204" # Let die if we don't have the "200" response
   end
 
   def head(path)
-    response=agent.head("#{endpoint}/#{container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
+    response=agent.head("#{endpoint}/#{@container}/#{Mechanize::Util::uri_escape(path)}",{},"X-Auth-Token" => os_token)
     reponse.code=="200"
   rescue Mechanize::ResponseCodeError => e
     false
