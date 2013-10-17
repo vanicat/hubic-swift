@@ -195,6 +195,8 @@ class HubicInterface
     response=agent.post(TOKEN_URL,{ "refresh_token" => @token['refresh_token'], "grant_type"=>"refresh_token", "client_id"=>@secret_store.client_id, "client_secret" => @secret_store.client_secret })
     new_token = JSON.load(response.body)
     @token.merge!(new_token)
+    @secret_store.store_connection_token(@token)
+    @token
   end
 
   def connect_to_os
