@@ -120,6 +120,11 @@ class SecretStore
   def creds_available?
     lookup_items("user") and lookup_items("client")
   end
+
+  def clean_connexion_token
+    item = lookup_items("tokens")
+    item.Delete
+  end
 end
 
 TOKEN_URL = "https://api.hubic.com/oauth/token/"
@@ -311,7 +316,7 @@ def main
     warn "or with --clean-connexion-token and --clean-creds to remove some information from them"
     exit(0)
   elsif ARGV.first == "--clean-connexion-token" then
-    secret_store.clean-connexion-token # TODO
+    secret_store.clean_connexion_token # TODO
     exit(0)
   elsif ARGV.first == "--clean-creds" then
     secret_store.clean-creds    # TODO
