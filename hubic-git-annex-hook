@@ -205,6 +205,8 @@ class HubicInterface
     new_token = JSON.load(response.body)
     new_token["expires"]=new_token["expires"].scan(/[0-9]+/).map { |s| s.to_i }
     @token.merge!(new_token)
+    @secret_store.store_connection_token(@token)
+    @token
   end
 
   def endpoint
