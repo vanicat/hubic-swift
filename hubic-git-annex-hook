@@ -38,17 +38,17 @@ class SecretStore
     @main_object = @dbus_service.object("/org/freedesktop/secrets")
     @main_object.introspect
     @main_object.default_iface = "org.freedesktop.Secret.Service"
-    
+
     @session = @main_object.OpenSession("plain","")[1]
 
     default_collection_name = @main_object.ReadAlias("default").first
     @default_collection = @dbus_service.object(default_collection_name)
     @default_collection.introspect
     @default_collection.default_iface = "org.freedesktop.Secret.Collection"
-    
+
     prompt = @main_object.Unlock([default_collection_name])
     unlocked = prompt.first.first
-    if unlocked.nil? 
+    if unlocked.nil?
       prompt(prompt[1],"Completed")
     end
   end
@@ -73,7 +73,7 @@ class SecretStore
       Process.wait(Process.spawn("secret-tool", "store", "--label=Hubic #{info}", "Service", "Hubic", "Info", info, public_info, pi))
       item = lookup_items(info)
     end
-    
+
     unless item                 # This is not working
       exit(-6)                  # let die
     end
@@ -93,7 +93,7 @@ class SecretStore
     end
   end
 
-  def get_user_info 
+  def get_user_info
     @username,@userpass = lookup_secret("user","username","password")
   end
 
@@ -181,9 +181,9 @@ class HubicInterface
       warn response_url
       exit(-8)
     end
-    
+
     @base64cred = Base64.encode64("#{@secret_store.client_id}:#{@secret_store.client_secret}").gsub(/\n/, '')
-    response=agent.post(TOKEN_URL,{ "code"=>@code, "redirect_uri"=>REDIRECT_URI, "grant_type"=>"authorization_code"}, 
+    response=agent.post(TOKEN_URL,{ "code"=>@code, "redirect_uri"=>REDIRECT_URI, "grant_type"=>"authorization_code"},
                         { "Authorization" => "Basic #{@base64cred}" })
     @token = JSON.load(response.body)
     @token['code']=@code
