@@ -210,11 +210,11 @@ class HubicInterface
   end
 
   def endpoint
-    @endpoint ||= @token['endpoint']
+    @token['endpoint']
   end
 
   def os_token
-    @os_token ||= @token['token']
+    @token['token']
   end
 
   def container(container)
