@@ -219,7 +219,10 @@ class HubicInterface
 
   def container(container)
     @container = container
-    response=agent.put("#{endpoint}/#{@container}",'',"X-Auth-Token" => os_token)
+    response = ""
+    try_or_reconnect do
+      response=agent.put("#{endpoint}/#{@container}",'',"X-Auth-Token" => os_token)
+    end
     exit (-1) unless response.code[0] == '2' # Let die if we don't have 2?? response
     self
   end
