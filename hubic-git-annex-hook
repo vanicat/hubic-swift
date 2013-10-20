@@ -224,6 +224,19 @@ class HubicInterface
     self
   end
 
+  def try_or_reconnect          # It can yield severall time the block
+    yield                       # We try
+  rescue Net::HTTPUnauthorized => e
+    begin
+      refresh_hubic_token       # We then try to refresh
+      yield
+    rescue Net::HTTPUnauthorized => e
+      @secret_store.clean_connexion_token
+      connect!
+      yield
+    end
+  end
+
   def set_body_stream file, agent, request
     request.body_stream = file
   end
