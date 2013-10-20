@@ -149,7 +149,7 @@ class HubicInterface
     @token = @secret_store.lookup_connection_token
     connect_to_hubic unless @token # If no token, we must connect to hubic
     if @token["expires"] then
-      if Time.now >  Time.utc(@token["expires"][0],@token["expires"][1],@token["expires"][2],@token["expires"][3]) then
+      if Time.now + 5 * 60 >  Time.utc(@token["expires"][0],@token["expires"][1],@token["expires"][2],@token["expires"][3]) then
         refresh_hubic_token
         connect_to_os
         @secret_store.store_connection_token(@token)
