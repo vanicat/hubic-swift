@@ -152,11 +152,9 @@ class HubicInterface
       if Time.now + 5 * 60 >  Time.utc(@token["expires"][0],@token["expires"][1],@token["expires"][2],@token["expires"][3]) then
         refresh_hubic_token
         connect_to_os
-        @secret_store.store_connection_token(@token)
       end
     else
       connect_to_os
-      @secret_store.store_connection_token(@token)
     end
   end
 
