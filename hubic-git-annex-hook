@@ -66,15 +66,7 @@ class SecretStore
   def lookup_secret(info,public_info,private_info)
     item = lookup_items(info)
 
-    unless item                 # There is no item, create it
-      print "What is your #{public_info}: "
-      pi = STDIN.readline.chomp
-      # I failed to create it with dbus, so let cheat
-      Process.wait(Process.spawn("secret-tool", "store", "--label=Hubic #{info}", "Service", "Hubic", "Info", info, public_info, pi))
-      item = lookup_items(info)
-    end
-
-    unless item                 # This is not working
+    unless item                 # There is no item in the secret store
       exit(-6)                  # let die
     end
 
