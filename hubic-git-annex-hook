@@ -130,8 +130,9 @@ REDIRECT_URI = "https://localhost.localdomain:4090/"
 CREDENTIALS_URL="https://api.hubic.com/1.0/account/credentials"
 
 class HubicInterface
-  def initialize(secret_store)
+  def initialize(secret_store,username)
     @secret_store=secret_store
+    @username=username
   end
 
   def agent
@@ -359,7 +360,7 @@ def main
     exit(-4)
   end
 
-  hubic = HubicInterface.new(secret_store)
+  hubic = HubicInterface.new(secret_store,ARGV[0])
   hook = GitAnnexHook.new(secret_store,hubic)
 
   hubic.connect!
