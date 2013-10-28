@@ -68,7 +68,7 @@ class SecretStore
     end
   end
 
-  def lookup_secret(info,public_info,private_info)
+  def lookup_secret(info,public_info)
     item = lookup_items(info)
 
     unless item                 # There is no item in the secret store
@@ -91,7 +91,7 @@ class SecretStore
   end
 
   def get_user_info
-    @username,@userpass = lookup_secret("user","username","password")
+    @username,@userpass = lookup_secret("user","username")
   end
 
   def username
@@ -103,7 +103,7 @@ class SecretStore
   end
 
   def get_client_info
-    @client_id, @client_secret = lookup_secret("client","client_id","client_secret")
+    @client_id, @client_secret = lookup_secret("client","client_id")
   end
 
   def client_id
