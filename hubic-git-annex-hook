@@ -319,8 +319,6 @@ end
 
 def main
   secret_store=SecretStore.new
-  hubic=HubicInterface.new(secret_store)
-  hook = GitAnnexHook.new(secret_store,hubic)
   if ARGV.first=="--init" then
     print "What is your username: "
     username = STDIN.readline.chomp
@@ -360,6 +358,9 @@ def main
   elsif not(secret_store.creds_available?) then
     exit(-4)
   end
+
+  hubic = HubicInterface.new(secret_store)
+  hook = GitAnnexHook.new(secret_store,hubic)
 
   hubic.connect!
 
