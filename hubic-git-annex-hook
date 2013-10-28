@@ -68,8 +68,8 @@ class SecretStore
     end
   end
 
-  def lookup_secret(info,public_info)
-    item = lookup_items(info)
+  def lookup_secret(info,public_info,username = nil)
+    item = lookup_items(info,public_info,username)
 
     unless item                 # There is no item in the secret store
       exit(-6)                  # let die
