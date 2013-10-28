@@ -276,13 +276,6 @@ class GitAnnexHook
 
   attr_reader :hubic
 
-  def init
-    @secret_store.username
-    @secret_store.userpass
-    @secret_store.client_id
-    @secret_store.client_secret
-  end
-
   def store(container,hash1, hash2, key,file)
     hubic.container(container).store("#{hash1}/#{hash2}/#{key}",file)
   end
