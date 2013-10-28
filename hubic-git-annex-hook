@@ -106,8 +106,8 @@ class SecretStore
     @client_secret || get_client_info[1]
   end
 
-  def creds_available?
-    lookup_items("user") and lookup_items("client")
+  def creds_available?(username)
+    lookup_items("user","username",username) and lookup_items("client")
   end
 
   def clean_connexion_token
@@ -354,7 +354,7 @@ def main
     warn "bye default hubic have only one container named default"
     warn "this hook will create the container if it do no exist"
     exit(-3)
-  elsif not(secret_store.creds_available?) then
+  elsif not(secret_store.creds_available?(ARGV[0])) then
     exit(-4)
   end
 
