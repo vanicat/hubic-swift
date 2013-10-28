@@ -330,7 +330,12 @@ def main
   hubic=HubicInterface.new(secret_store)
   hook = GitAnnexHook.new(secret_store,hubic)
   if ARGV.first=="--init" then
-    hook.init
+    print "What is your username: "
+    username = STDIN.readline.chomp
+    secret_store.new_secret("user", "username", username)
+    print "What is your client id: "
+    client_id = STDIN.readline.chomp
+    secret_store.new_secret("client","client_id",client_id)
     exit(0)
   elsif ARGV.first=="--help" then
     warn "This is a git annex remote hook, that should no be run directly,"
