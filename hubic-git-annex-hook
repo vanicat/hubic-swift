@@ -110,8 +110,8 @@ class SecretStore
     lookup_items("user","username",username) and lookup_items("client")
   end
 
-  def clean_connexion_token
-    item = lookup_items("tokens")
+  def clean_connexion_token(username)
+    item = lookup_items("tokens","username",username)
     item.Delete
   end
 
@@ -227,7 +227,7 @@ class HubicInterface
       refresh_hubic_token       # We then try to refresh
       yield
     rescue Net::HTTPUnauthorized => e
-      @secret_store.clean_connexion_token
+      @secret_store.clean_connexion_token(@username)
       connect!
       yield
     end
@@ -333,7 +333,12 @@ def main
     # warn "or with --clean-connexion-token and --clean-creds to remove some information from them"
     exit(0)
   elsif ARGV.first == "--clean-connexion-token" then
-    secret_store.clean_connexion_token # TODO
+    if ARGV[1].nil? then
+      warn "You have to specify the username you want cleaning for"
+      warn "call hubic-git-annex-hook --clean-connexion-token [username]"
+      exit(-1)
+    end
+    secret_store.clean_connexion_token(ARGV[1])
     exit(0)
   elsif ARGV.first == "--clean-creds" then
     secret_store.clean-creds    # TODO
