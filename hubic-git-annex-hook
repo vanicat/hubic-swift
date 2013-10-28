@@ -125,6 +125,11 @@ class SecretStore
     item = lookup_items("tokens")
     item.Delete
   end
+
+  def new_secret(info,public_info,username = nil)
+    # I failed to create it with dbus, so let cheat
+    Process.wait(Process.spawn("secret-tool", "store", "--label=Hubic #{info}", "Service", "Hubic", "Info", info, public_info, username))
+  end
 end
 
 TOKEN_URL = "https://api.hubic.com/oauth/token/"
