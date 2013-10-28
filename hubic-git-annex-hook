@@ -331,8 +331,9 @@ def main
   elsif ARGV.first=="--help" then
     warn "This is a git annex remote hook, that should no be run directly,"
     warn "but mainly as a specila remote hook, see git annex doc"
-    warn "you can still run it with the `--init` option to store your cred in your gnome-keyring or kwallet"
-    warn "or with --clean-connexion-token and --clean-creds to remove some information from them"
+    warn "you have to intialise it by running it with the `--init` option to store your"
+    warn "cred in your gnome-keyring or kwallet"
+    # warn "or with --clean-connexion-token and --clean-creds to remove some information from them"
     exit(0)
   elsif ARGV.first == "--clean-connexion-token" then
     secret_store.clean_connexion_token # TODO
