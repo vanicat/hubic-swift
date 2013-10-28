@@ -78,14 +78,14 @@ class SecretStore
     [item["org.freedesktop.Secret.Item"]["Attributes"][public_info], byte_arr_to_s(item.GetSecret(@session).first[2])]
   end
 
-  def lookup_connection_token
-    item = lookup_items("tokens")
+  def lookup_connection_token(username)
+    item = lookup_items("tokens","username",username)
     return nil unless item
     JSON.load(byte_arr_to_s(item.GetSecret(@session).first[2]))
   end
 
-  def store_connection_token(token)
-    IO.popen(["secret-tool", "store", "--label=Hubic tokens", "Service", "Hubic", "Info", "tokens"],"r+") do |fd|
+  def store_connection_token(username,token)
+    IO.popen(["secret-tool", "store", "--label=Hubic tokens", "Service", "Hubic", "Info", "tokens", "username", username],"r+") do |fd|
       fd.puts JSON.dump(token)
     end
   end
@@ -141,7 +141,7 @@ class HubicInterface
   end
 
   def connect!
-    @token = @secret_store.lookup_connection_token
+    @token = @secret_store.lookup_connection_token(@username)
     connect_to_hubic unless @token # If no token, we must connect to hubic
     if @token["expires"] then
       if Time.now + 5 * 60 >  Time.utc(@token["expires"][0],@token["expires"][1],@token["expires"][2],@token["expires"][3]) then
@@ -188,7 +188,7 @@ class HubicInterface
     response=agent.post(TOKEN_URL,{ "refresh_token" => @token['refresh_token'], "grant_type"=>"refresh_token", "client_id"=>@secret_store.client_id, "client_secret" => @secret_store.client_secret })
     new_token = JSON.load(response.body)
     @token.merge!(new_token)
-    @secret_store.store_connection_token(@token)
+    @secret_store.store_connection_token(@username,@token)
     @token
   end
 
@@ -198,7 +198,7 @@ class HubicInterface
     new_token = JSON.load(response.body)
     new_token["expires"]=new_token["expires"].scan(/[0-9]+/).map { |s| s.to_i }
     @token.merge!(new_token)
-    @secret_store.store_connection_token(@token)
+    @secret_store.store_connection_token(@username,@token)
     @token
   end
 
