@@ -90,16 +90,8 @@ class SecretStore
     end
   end
 
-  def get_user_info
-    @username,@userpass = lookup_secret("user","username")
-  end
-
-  def username
-    @username || get_user_info[0]
-  end
-
-  def userpass
-    @userpass || get_user_info[1]
+  def userpass(username)
+    lookup_secret("user","username",username)[1]
   end
 
   def get_client_info
@@ -171,8 +163,8 @@ class HubicInterface
                      },nil,nil)
     page=page.links.first.click
     form = page.forms.first
-    form['login']=@secret_store.username
-    form['user_pwd']=@secret_store.userpass
+    form['login']=@username
+    form['user_pwd']=@secret_store.userpass(@username)
     page2=form.click_button
     response_url=page2["location"]
     exit(-7) unless response_url
