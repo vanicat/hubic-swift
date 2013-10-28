@@ -53,8 +53,13 @@ class SecretStore
     end
   end
 
-  def lookup_items(info)
-    name = @default_collection.SearchItems("Service" => "Hubic", "Info" => info).first
+  def lookup_items(info,public_info=nil,username=nil)
+    search = { "Service" => "Hubic", "Info" => info }
+    if public_info and username then
+      search[public_info]=username
+    end
+
+    name = @default_collection.SearchItems(search).first
     if name.first
       item=@dbus_service.object(name.first)
       item.introspect
