@@ -116,7 +116,7 @@ def connect_to_hubic
 
   page = agent.get(login_url)
 
-  if page.code = "302"
+  if page.code == "302"
     response_url=page.response["location"]
     strings_args=response_url.scan(/[&?][^&]*/)
     args = { }
