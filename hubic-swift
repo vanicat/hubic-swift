@@ -34,7 +34,7 @@ require "base64"
 require 'highline/import'
 
 TOKEN_URL = "https://api.hubic.com/oauth/token/"
-AUTH_URL = "https://api.hubic.com/oauth/auth"
+AUTH_URL = "https://api.hubic.com/oauth/auth/"
 REDIRECT_URI = "https://localhost.localdomain:4090/"
 CREDENTIALS_URL="https://api.hubic.com/1.0/account/credentials"
 
@@ -108,13 +108,13 @@ end
 
 def connect_to_hubic
   agent.redirect_ok=false
-  login_url = "#{AUTH_URL}/?client_id=#{@hubic_client_id}" +
-    "&redirect_uri=https:%2F%2Flocalhost.localdomain:4090%2F" +
-    "&scope=usage.r,account.r,getAllLinks.r,credentials.r,links.drw" +
-    "&response_type=code" +
-    "&state=none"
 
-  page = agent.get(login_url)
+  page = agent.get(AUTH_URL,{
+                     "client_id"=>@hubic_client_id,
+                     "redirect_uri" => REDIRECT_URI,
+                     "scope" => "usage.r,account.r,getAllLinks.r,credentials.r,links.drw",
+                     "response_type" => "code",
+                     "state" => "none"},nil,nil)
 
   if page.code == "302"
     response_url=page.response["location"]
