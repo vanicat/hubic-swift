@@ -126,9 +126,12 @@ def connect_to_hubic
     end
     case args["error"]
     when "unauthorized_client" then
-      warn "your client id is incorrect, please verify the content of #{File.absolute_path('creds', xdg_config_dir)}"
+      warn ""
+      warn "ERROR:"
+      warn "your client id is incorrect, please verify the content of"
+      warn "#{File.absolute_path('creds', xdg_config_dir)}"
       warn "client_id should look like api_hubic_ABCieEe12e2324po232iu78ei1ii1234489791ABue,"
-      warn "and be the id given to you when you registered the app in"
+      warn "and should be the id given to you when you registered the app in"
       warn "https://hubic.com/home/browser/developers/"
       exit(-1)
     else
