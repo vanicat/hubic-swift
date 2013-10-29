@@ -139,7 +139,8 @@ def connect_to_hubic
       warn "https://github.com/vanicat/hubic-swift/issues"
       warn "with the following information:"
       warn "code: #{page.code}"
-      warn reponse
+      warn "reponse: #{page.response}"
+      warn "details: #{args}"
     end
     exit(-1)
   elsif page.code != "200"
