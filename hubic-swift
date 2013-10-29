@@ -79,7 +79,7 @@ def ask_creds(askpass=true)
       @hubic_pass = config['PASSWD']
     end
   end
-      
+
   unless @hubic_client_id
     @hubic_client_id = ask_id("What is your client id?")
     config['CLIENT_ID'] = @hubic_client_id
@@ -113,7 +113,39 @@ def connect_to_hubic
     "&scope=usage.r,account.r,getAllLinks.r,credentials.r,links.drw" +
     "&response_type=code" +
     "&state=none"
+
   page = agent.get(login_url)
+
+  if page.code = "302"
+    response_url=page.response["location"]
+    strings_args=response_url.scan(/[&?][^&]*/)
+    args = { }
+    for arg in strings_args
+      cut = arg.scan(/[^?&=]+/)
+      args[cut[0]]=cut[1]
+    end
+    case args["error"]
+    when "unauthorized_client" then
+      warn "your client id is incorrect, please verify the content of #{File.absolute_path('creds', xdg_config_dir)}"
+      warn "client_id should look like api_hubic_ABCieEe12e2324po232iu78ei1ii1234489791ABue,"
+      warn "and be the id given to you when you registered the app in"
+      warn "https://hubic.com/home/browser/developers/"
+      exit(-1)
+    else
+      warn "unknown error, please fill a bug at"
+      warn "https://github.com/vanicat/hubic-swift/issues"
+      warn "with the following information:"
+      warn "code: #{page.code}"
+      warn reponse
+    end
+    exit(-1)
+  elsif page.code != "200"
+    warn "unknown situation, please fill a bug at"
+    warn "https://github.com/vanicat/hubic-swift/issues"
+    warn "with the following information:"
+    warn "code: #{page.code}"
+    warn page
+  end
   form = page.forms.first
   form['login']=@hubic_username
   form['user_pwd']=@hubic_pass
@@ -133,7 +165,7 @@ def refresh_hubic_token
   response=agent.post(TOKEN_URL,{ "refresh_token" => @token['refresh_token'], "grant_type"=>"refresh_token", "client_id"=>@hubic_client_id, "client_secret" => @hubic_client_secret })
   new_token = JSON.load(response.body)
   @token.merge!(new_token)
-end  
+end
 
 def save_hubic_token
   File.open(RUNTIME_TOKEN_FILE,File::CREAT|File::TRUNC|File::RDWR, 0600) do |fd|
