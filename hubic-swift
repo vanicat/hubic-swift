@@ -134,6 +134,21 @@ def connect_to_hubic
       warn "and should be the id given to you when you registered the app in"
       warn "https://hubic.com/home/browser/developers/"
       exit(-1)
+    when "invalid_request" then
+      warn ""
+      if args["error_description"] == "please verify redirect uri" then
+        warn "ERROR:"
+        warn "The redirect URI use by your hubic client do not match the one use"
+        warn "by hubic-swift. Either change the one in your client, or in this code"
+      else
+        warn "ERROR:"
+        warn "unknown error, please fill a bug at"
+        warn "https://github.com/vanicat/hubic-swift/issues"
+        warn "with the following information:"
+        warn "code: #{page.code}"
+        warn "reponse: #{page.response}"
+        warn "details: #{args}"
+      end
     else
       warn "unknown error, please fill a bug at"
       warn "https://github.com/vanicat/hubic-swift/issues"
