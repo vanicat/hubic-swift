@@ -7,10 +7,15 @@ in hubic.
 Dependency
 ----------
 
-You obviously need to have ruby to run this. I also use the mechanize,
-logger, and highline gems (json and base64 are part of ruby).
+You obviously need to have swift to run this as it is only a wrapper.
+You also need ruby and some of its gems : mechanize logger and highline.
 
-This has only been tested on Debian.
+On debian, 
+
+    apt-get install swift ruby ruby-mechanize ruby-logger ruby-higline
+
+will install everything that is needed. By the way this has only been
+tested on Debian, but should work on any recent GNU/Linux.
 
 You also need a `client_id` and `client_secret`. To have them,
 register an application in your hubic
