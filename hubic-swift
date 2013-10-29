@@ -170,6 +170,19 @@ def connect_to_hubic
   form['user_pwd']=@hubic_pass
   agent.redirect_ok=false
   page2=form.click_button
+  if page2.code == "200"
+    warn "wrong login or password"
+    warn "To change their value, you might have to edit"
+    warn "#{File.absolute_path('creds', xdg_config_dir)}"
+    exit(-1)
+  elsif page2.code != "302"
+    warn "unknown situation in login, please fill a bug at"
+    warn "https://github.com/vanicat/hubic-swift/issues"
+    warn "with the following information:"
+    warn "code: #{page2.code}"
+    warn page2
+    exit(-1)
+  end
   response_url=page2["location"]
   @code = response_url.scan(/code=[^&]*/).first[5..-1]
   
