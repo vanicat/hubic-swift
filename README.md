@@ -20,7 +20,7 @@ tested on Debian, but should work on any recent GNU/Linux.
 You also need a `client_id` and `client_secret`. To have them,
 register an application in your hubic
 [account](https://hubic.com/home/browser/developers/), I use
-`https://localhost.localdomain:4090/` as a redirect_uri. You could use
+`http://localhost:4567/` as a redirect_uri. You could use
 anything else, but will have to change the value of `REDIRECT_URI` in
 the source code.
 
