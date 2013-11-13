@@ -115,6 +115,22 @@ class SecretStore
     item.Delete
   end
 
+  def clean_creds
+    search = { "Service" => "Hubic" }
+
+    items = @default_collection.SearchItems(search).first
+    if items then
+      for name in items do
+        item=@dbus_service.object(name)
+        item.introspect
+        item.default_iface = "org.freedesktop.Secret.Item"
+        item.Delete
+      end
+    end
+  end
+
+
+
   def new_secret(info,public_info,username = nil)
     # I failed to create it with dbus, so let cheat
     Process.wait(Process.spawn("secret-tool", "store", "--label=Hubic #{info}", "Service", "Hubic", "Info", info, public_info, username))
@@ -333,14 +349,14 @@ def main
     end
     secret_store.clean_connexion_token(ARGV[1])
     exit(0)
-  elsif ARGV.first == "--clean-creds" then
-    secret_store.clean-creds    # TODO
+  elsif ARGV.first == "--clean-credentials" then
+    secret_store.clean_creds
     exit(0)
   end
 
   if ENV['ANNEX_ACTION'].nil? then
     warn "I don\'t now what to do"
-    warn "Either run with --init to store credetianle in your gnome-keyring or kwallet"
+    warn "Either run with --init to store credential in your gnome-keyring or kwallet"
     warn "or run it as special remote hook"
     warn "see http://git-annex.branchable.com/special_remotes/hook/"
     exit(-2)
