@@ -70,7 +70,15 @@ BUGS
 No error detection is done. The way the hubic and openstack token are
 store might be unsafe. I should probably try to find a safe for them. 
 
-If something stop working try
+If something stop working you could try
+
+    ./hubic-swift --cleanup
+
+to remove the connexion token, and so to force hubic-swift to
+reconnect. 
+
+Report any bug to the [github project page](https://github.com/vanicat/hubic-swift/issues?state=open)
+
 
 COPYING
 -------
