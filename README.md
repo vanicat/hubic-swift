@@ -48,6 +48,22 @@ will run
 
 then swift will list what is in you default container.
 
+Storing your password
+---------------------
+
+If you are fed up to enter your password too often, you can store it
+in the creds file. Note that this is unsafe.
+
+Open `$XDG_CONFIG_HOME/hubic-swift/creds`. It will look like
+
+    {"CLIENT_ID":"api_hubic_longstring","CLIENT_SECRET":"xxxxxxxxxxxxxxxxxxxxxx","USERNAME":"me@example.com"}
+
+You have to had `"PASSWD":"mysecretpassword"` there:
+
+    {"CLIENT_ID":"api_hubic_longstring","CLIENT_SECRET":"xxxxxxxxxxxxxxxxxxxxxx","USERNAME":"me@example.com","PASSWD":"mysecretpassword"}
+
+This is unsafe, but I don't now how the official client store this
+information, and it might not be safer.
 
 BUGS
 ----
