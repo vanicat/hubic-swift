@@ -138,7 +138,7 @@ class SecretStore
 end
 
 TOKEN_URL = "https://api.hubic.com/oauth/token/"
-AUTH_URL = "https://api.hubic.com/oauth/auth"
+AUTH_URL = "https://api.hubic.com/oauth/auth/"
 REDIRECT_URI = "http://localhost:4567/"
 CREDENTIALS_URL="https://api.hubic.com/1.0/account/credentials"
 
