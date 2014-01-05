@@ -171,17 +171,17 @@ class HubicInterface
 
   def connect_to_hubic
     warn 'connect hubic'
-    page = agent.get(AUTH_URL,{ "client_id" => @secret_store.client_id,
+
+    page = agent.get(AUTH_URL,{
+                       "client_id" => @secret_store.client_id,
                        "redirect_uri" => REDIRECT_URI,
                        "scope" => "usage.r,account.r,getAllLinks.r,credentials.r,links.drw",
                        "response_type" => "code",
                        "state" => "none"
                      },nil,nil)
-    page=page.links.first.click
-    form = page.forms.first
-    form['login']=@username
-    form['user_pwd']=@secret_store.userpass(@username)
-    page2=form.click_button
+    oauthid = page.at("/page/opt/OAuthId/text()")
+    agent.redirect_ok=false
+    page2 = agent.post(AUTH_URL, [ ["oauth", oauthid], ["credentials", "r"], ["getAllLinks", "r"], ["links", "r"], ["links", "w"], ["account", "r"], ["action", "accepted"], ["login", @username], ["user_pwd", @secret_store.userpass(@username) ]], { "Authorization" => "Basic #{@base64cred}" })
     response_url=page2["location"]
     exit(-7) unless response_url
 
