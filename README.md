@@ -58,7 +58,7 @@ Open `$XDG_CONFIG_HOME/hubic-swift/creds`. It will look like
 
     {"CLIENT_ID":"api_hubic_longstring","CLIENT_SECRET":"xxxxxxxxxxxxxxxxxxxxxx","USERNAME":"me@example.com"}
 
-You have to had `"PASSWD":"mysecretpassword"` there:
+You have to add `"PASSWD":"mysecretpassword"` there:
 
     {"CLIENT_ID":"api_hubic_longstring","CLIENT_SECRET":"xxxxxxxxxxxxxxxxxxxxxx","USERNAME":"me@example.com","PASSWD":"mysecretpassword"}
 
