@@ -8,11 +8,11 @@ Dependency
 ----------
 
 You obviously need to have swift to run this as it is only a wrapper.
-You also need ruby and some of its gems : mechanize logger and highline.
+You also need ruby and some of its gems : mechanize, logger and highline.
 
 On debian, 
 
-    apt-get install swift ruby ruby-mechanize ruby-logger ruby-higline
+    apt-get install swift ruby ruby-mechanize ruby-logger ruby-highline
 
 will install everything that is needed. By the way this has only been
 tested on Debian, but should work on any recent GNU/Linux.

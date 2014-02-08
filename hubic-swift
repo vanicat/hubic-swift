@@ -98,7 +98,7 @@ def ask_creds(askpass=true)
 
   unless @hubic_pass || not(askpass)
     @hubic_pass = ask_secret("What is your hubic password?")
-    print("This password won't be saved, you have to manualy edit ", File.absolute_path('creds', xdg_config_dir),"\n")
+    print("This password won't be saved, you have to manually edit ", File.absolute_path('creds', xdg_config_dir),"\n")
   end
 
   File.open(creds_file,File::CREAT|File::TRUNC|File::RDWR, 0600) do |fd|
