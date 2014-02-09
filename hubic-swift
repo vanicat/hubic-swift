@@ -114,7 +114,8 @@ def connect_to_hubic
                      "redirect_uri" => REDIRECT_URI,
                      "scope" => "usage.r,account.r,getAllLinks.r,credentials.r,links.drw",
                      "response_type" => "code",
-                     "state" => "none"},nil,nil)
+                     "state" => "none"
+                   },nil,nil)
 
   if page.code == "302"
     response_url=page.response["location"]
