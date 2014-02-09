@@ -8,11 +8,11 @@ Dependency
 ----------
 
 You obviously need to have swift to run this as it is only a wrapper.
-You also need ruby and some of its gems : mechanize logger and highline.
+You also need ruby and some of its gems : mechanize, logger and highline.
 
-On debian, 
+On debian,
 
-    apt-get install swift ruby ruby-mechanize ruby-logger ruby-higline
+    apt-get install swift ruby ruby-mechanize ruby-logger ruby-highline
 
 will install everything that is needed. By the way this has only been
 tested on Debian, but should work on any recent GNU/Linux.
@@ -68,14 +68,14 @@ information, and it might not be safer.
 BUGS
 ----
 No error detection is done. The way the hubic and openstack token are
-store might be unsafe. I should probably try to find a safe for them. 
+store might be unsafe. I should probably try to find a safe for them.
 
 If something stop working you could try
 
     ./hubic-swift --cleanup
 
 to remove the connexion token, and so to force hubic-swift to
-reconnect. 
+reconnect.
 
 Report any bug to the [github project page](https://github.com/vanicat/hubic-swift/issues?state=open)
 
