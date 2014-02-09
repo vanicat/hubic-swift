@@ -166,10 +166,11 @@ def connect_to_hubic
     warn "code: #{page.code}"
     warn page
   end
-
-  oauthid = page.at("/page/opt/OAuthId/text()")
+  form = page.forms.first
+  form['login']=@hubic_username
+  form['user_pwd']=@hubic_pass
   agent.redirect_ok=false
-  page2 = agent.post(AUTH_URL, [ ["oauth", oauthid], ["credentials", "r"], ["getAllLinks", "r"], ["links", "r"], ["links", "w"], ["account", "r"], ["action", "accepted"], ["login", @hubic_username], ["user_pwd", @hubic_pass ]], { "Authorization" => "Basic #{@base64cred}" })
+  page2=form.click_button
   if page2.code == "200"
     warn "wrong login or password"
     warn "To change their value, you might have to edit"
