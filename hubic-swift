@@ -109,86 +109,15 @@ end
 def connect_to_hubic
   agent.redirect_ok=false
 
-  page = agent.get(AUTH_URL,{
-                     "client_id"=>@hubic_client_id,
-                     "redirect_uri" => REDIRECT_URI,
-                     "scope" => "usage.r,account.r,getAllLinks.r,credentials.r,links.drw",
-                     "response_type" => "code",
-                     "state" => "none"
-                   },nil,nil)
-
-  if page.code == "302"
-    response_url=page.response["location"]
-    strings_args=response_url.scan(/[&?][^&]*/)
-    args = { }
-    for arg in strings_args
-      cut = arg.scan(/[^?&=]+/)
-      args[cut[0]]=cut[1]
-    end
-    case args["error"]
-    when "unauthorized_client" then
-      warn ""
-      warn "ERROR:"
-      warn "your client id is incorrect, please verify the content of"
-      warn "#{File.absolute_path('creds', xdg_config_dir)}"
-      warn "client_id should look like api_hubic_ABCieEe12e2324po232iu78ei1ii1234489791ABue,"
-      warn "and should be the id given to you when you registered the app in"
-      warn "https://hubic.com/home/browser/developers/"
-      exit(-1)
-    when "invalid_request" then
-      warn ""
-      if args["error_description"] == "please verify redirect uri" then
-        warn "ERROR:"
-        warn "The redirect URI use by your hubic client do not match the one use"
-        warn "by hubic-swift. Either change the one in your client, or in this code"
-      else
-        warn "ERROR:"
-        warn "unknown error, please fill a bug at"
-        warn "https://github.com/vanicat/hubic-swift/issues"
-        warn "with the following information:"
-        warn "code: #{page.code}"
-        warn "reponse: #{page.response}"
-        warn "details: #{args}"
-      end
-    else
-      warn "unknown error, please fill a bug at"
-      warn "https://github.com/vanicat/hubic-swift/issues"
-      warn "with the following information:"
-      warn "code: #{page.code}"
-      warn "reponse: #{page.response}"
-      warn "details: #{args}"
-    end
-    exit(-1)
-  elsif page.code != "200"
-    warn "unknown situation, please fill a bug at"
-    warn "https://github.com/vanicat/hubic-swift/issues"
-    warn "with the following information:"
-    warn "code: #{page.code}"
-    warn page
-  end
-  form = page.forms.first
-  form['login']=@hubic_username
-  form['user_pwd']=@hubic_pass
-  agent.redirect_ok=false
-  page2=form.click_button
-  if page2.code == "200"
-    warn "wrong login or password"
-    warn "To change their value, you might have to edit"
-    warn "#{File.absolute_path('creds', xdg_config_dir)}"
-    exit(-1)
-  elsif page2.code != "302"
-    warn "unknown situation in login, please fill a bug at"
-    warn "https://github.com/vanicat/hubic-swift/issues"
-    warn "with the following information:"
-    warn "code: #{page2.code}"
-    warn page2
-    exit(-1)
-  end
-  response_url=page2["location"]
-  @code = response_url.scan(/code=[^&]*/).first[5..-1]
-  
   @base64cred = Base64.encode64("#{@hubic_client_id}:#{@hubic_client_secret}").gsub(/\n/, '')
-  response=agent.post(TOKEN_URL,{ "code"=>@code, "redirect_uri"=>REDIRECT_URI, "grant_type"=>"authorization_code"}, { "Authorization" => "Basic #{@base64cred}" })
+  response=agent.post(TOKEN_URL,{
+                        "grant_type"=>"password",
+                        "username" => @hubic_username,
+                        "password" => @hubic_pass,
+                        "scope" => "usage.r,account.r,getAllLinks.r,credentials.r,links.drw"
+                      },
+                      { "Authorization" => "Basic #{@base64cred}" })
+
   @token = JSON.load(response.body)
   @token['code']=@code
   return @token
